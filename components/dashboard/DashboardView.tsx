@@ -15,12 +15,11 @@ import {
   BarChart2,
   ChevronRight,
   CheckCircle2,
-  Activity,
 } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Avatar } from "@/components/ui/avatar"
 import { PositionChart, PositionCount } from "./PositionChart"
@@ -275,16 +274,26 @@ export function DashboardView() {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <Button asChild variant="default" size="default" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold shadow-lg shadow-emerald-500/20 gap-2">
-              <Link href="/players">
-                <Plus className="h-4 w-4" /> Nuevo Jugador
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="default" className="gap-2 border-slate-700 hover:bg-slate-800 text-slate-200">
-              <Link href="/video">
-                <Video className="h-4 w-4 text-emerald-400" /> Analizar Vídeo
-              </Link>
-            </Button>
+            <Link
+              href="/players"
+              className={buttonVariants({
+                variant: "default",
+                size: "default",
+                className: "bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold shadow-lg shadow-emerald-500/20 gap-2",
+              })}
+            >
+              <Plus className="h-4 w-4" /> Nuevo Jugador
+            </Link>
+            <Link
+              href="/video"
+              className={buttonVariants({
+                variant: "outline",
+                size: "default",
+                className: "gap-2 border-slate-700 hover:bg-slate-800 text-slate-200",
+              })}
+            >
+              <Video className="h-4 w-4 text-emerald-400" /> Analizar Vídeo
+            </Link>
           </div>
         </div>
       </div>
@@ -398,11 +407,16 @@ export function DashboardView() {
                   Jugadores recientemente añadidos o evaluados en la plataforma
                 </CardDescription>
               </div>
-              <Button asChild variant="ghost" size="sm" className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 gap-1">
-                <Link href="/players">
-                  Ver catálogo completo <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+              <Link
+                href="/players"
+                className={buttonVariants({
+                  variant: "ghost",
+                  size: "sm",
+                  className: "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 gap-1",
+                })}
+              >
+                Ver catálogo completo <ArrowRight className="h-4 w-4" />
+              </Link>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -561,11 +575,16 @@ export function DashboardView() {
               ))}
 
               <div className="pt-4 border-t border-slate-800/80">
-                <Button asChild variant="outline" size="sm" className="w-full text-xs border-slate-700 hover:bg-slate-800 text-slate-300">
-                  <Link href="/players?sort=rating">
-                    Ver clasificación completa de valoraciones
-                  </Link>
-                </Button>
+                <Link
+                  href="/players?sort=rating"
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                    className: "w-full text-xs border-slate-700 hover:bg-slate-800 text-slate-300",
+                  })}
+                >
+                  Ver clasificación completa de valoraciones
+                </Link>
               </div>
             </CardContent>
           </Card>
