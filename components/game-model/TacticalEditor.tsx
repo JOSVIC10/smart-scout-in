@@ -1,26 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import {
-  DndContext,
-  DragOverlay,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  DragStartEvent,
-  DragEndEvent,
-  defaultDropAnimationSideEffects
-} from '@dnd-kit/core'
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
+import React, { useState } from 'react'
 import type { PlayerWithClub } from '@/types/players'
 import type { GameModel, TacticalSlot } from '@/lib/gameModelApi'
 import { FORMATIONS, relocatePlayers } from '@/lib/formations'
 import { PitchBoard } from './PitchBoard'
 import { PlayerPool } from './PlayerPool'
-import { DraggablePlayer } from './DraggablePlayer'
+import { Save, Wand2 } from 'lucide-react'
 
 interface TacticalEditorProps {
   players: PlayerWithClub[]
@@ -46,26 +32,15 @@ export function TacticalEditor({
     return JSON.parse(JSON.stringify(FORMATIONS[initialFormation]))
   })
 
-  const [activePlayer, setActivePlayer] = useState<PlayerWithClub | null>(null)
-
-  // Configure Dnd sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 } // 5px movement before dragging starts
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 250, tolerance: 5 } // 250ms press before drag on touch
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
+  // Selected slot for click-to-assign
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
 
   // Handle Formation Change
   const handleFormationChange = (newFormation: string) => {
     setFormation(newFormation)
     const newSlots = relocatePlayers(slots, newFormation)
     setSlots(newSlots)
+    setSelectedSlotId(null)
   }
 
   // Handle Game Model Change
@@ -77,48 +52,95 @@ export function TacticalEditor({
     }
   }
 
-  // Drag Handlers
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event
-    const player = active.data.current?.player as PlayerWithClub
-    if (player) {
-      setActivePlayer(player)
+  const handleClear = () => {
+    if (confirm("¿Estás seguro de que deseas limpiar todo el campo?")) {
+      setSlots(prev => prev.map(s => ({ ...s, playerId: null })))
+      setSelectedSlotId(null)
     }
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    setActivePlayer(null)
+  const handleSlotClick = (slotId: string) => {
+    // Toggle selection
+    setSelectedSlotId(prev => prev === slotId ? null : slotId)
+  }
 
-    if (!over) return // Dropped outside
+  const isPositionCompatible = (playerPos: string, slotPos: string) => {
+    if (slotPos === 'GK' && playerPos !== 'GK') return false
+    if (playerPos === 'GK' && slotPos !== 'GK') return false
 
-    const player = active.data.current?.player as PlayerWithClub
-    const slotId = over.id as string
+    const mapping: Record<string, string[]> = {
+      'GK': ['GK'],
+      'CB': ['CB', 'DM'],
+      'FB': ['FB', 'RB', 'LB', 'CB', 'W', 'RW', 'LW'],
+      'DM': ['DM', 'CM', 'BBM', 'CB'],
+      'CM': ['CM', 'BBM', 'DM', 'AM'],
+      'AM': ['AM', 'CM', 'W', 'RW', 'LW', 'SS'],
+      'W':  ['W', 'RW', 'LW', 'AM', 'SS', 'ST', 'CF'],
+      'ST': ['ST', 'CF', 'SS', 'W', 'RW', 'LW']
+    }
+    return mapping[slotPos]?.includes(playerPos) || false
+  }
 
-    if (!player) return
+  const handlePlayerSelect = (player: PlayerWithClub) => {
+    if (!selectedSlotId) return // No slot selected to assign to
+
+    const targetSlot = slots.find(s => s.id === selectedSlotId)
+    if (!targetSlot) return
+
+    if (!isPositionCompatible(player.position, targetSlot.position)) {
+      alert(`Un jugador de posición ${player.position} no puede jugar como ${targetSlot.position}.`)
+      return
+    }
 
     setSlots(prev => prev.map(slot => {
-      // If we are dropping into a slot
-      if (slot.id === slotId) {
-        // Find if this player was already in another slot and remove it from there
-        const oldSlot = prev.find(s => s.playerId === player.id)
-        if (oldSlot && oldSlot.id !== slotId) {
-          // Handled below by mapping all slots
-        }
+      // Assign to selected slot
+      if (slot.id === selectedSlotId) {
         return { ...slot, playerId: player.id }
       }
-      
-      // If this slot previously had the player we are moving, clear it
-      if (slot.playerId === player.id && slot.id !== slotId) {
+      // If the player was already in another slot, clear that old slot
+      if (slot.playerId === player.id) {
         return { ...slot, playerId: null }
       }
-      
       return slot
     }))
+    
+    // Auto-deselect after assigning
+    setSelectedSlotId(null)
   }
 
   const handleRemovePlayer = (slotId: string) => {
     setSlots(prev => prev.map(s => s.id === slotId ? { ...s, playerId: null } : s))
+  }
+
+  const handleAutoBest11 = () => {
+    // Make a copy of current slots and available players
+    let currentSlots = [...slots]
+    const assignedIds = new Set(currentSlots.map(s => s.playerId).filter(Boolean) as string[])
+    
+    // To make it simple: iterate over empty slots
+    const emptySlots = currentSlots.filter(s => !s.playerId)
+
+    // Sort players by overall_rating descending
+    const sortedPlayers = [...players].sort((a, b) => (b.overall_rating || 0) - (a.overall_rating || 0))
+
+    for (const slot of emptySlots) {
+      const neededPosition = slot.position // e.g. "CB", "ST"
+      
+      // Find the best unassigned player that plays this position naturally
+      let bestFit = sortedPlayers.find(p => !assignedIds.has(p.id) && p.position === neededPosition)
+      
+      if (!bestFit) {
+        // Fallback: Find the best unassigned player that is AT LEAST compatible
+        bestFit = sortedPlayers.find(p => !assignedIds.has(p.id) && isPositionCompatible(p.position, neededPosition))
+      }
+
+      if (bestFit) {
+        assignedIds.add(bestFit.id)
+        currentSlots = currentSlots.map(s => s.id === slot.id ? { ...s, playerId: bestFit!.id } : s)
+      }
+    }
+
+    setSlots(currentSlots)
   }
 
   const handleSave = async () => {
@@ -146,75 +168,67 @@ export function TacticalEditor({
   }
 
   const assignedPlayerIds = new Set(slots.map(s => s.playerId).filter(Boolean) as string[])
+  const selectedSlot = slots.find(s => s.id === selectedSlotId)
 
   return (
-    <DndContext 
-      sensors={sensors} 
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex flex-col h-full bg-background">
-        {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-b border-border gap-4 bg-card z-10 relative">
-          <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Modelo de Juego</label>
-              <select 
-                className="flex h-9 w-full sm:w-48 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                value={selectedModelId || ''}
-                onChange={(e) => handleModelChange(e.target.value)}
-              >
-                {gameModels.map(gm => (
-                  <option key={gm.id} value={gm.id}>{gm.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Formación</label>
-              <select 
-                className="flex h-9 w-full sm:w-32 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                value={formation}
-                onChange={(e) => handleFormationChange(e.target.value)}
-              >
-                {Object.keys(FORMATIONS).map(fmt => (
-                  <option key={fmt} value={fmt}>{fmt}</option>
-                ))}
-              </select>
-            </div>
+    <div className="flex flex-col h-full bg-slate-950 text-slate-200">
+      
+      {/* Simple Toolbar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-b border-slate-800 gap-4 bg-[#111827] z-10 shadow-sm relative">
+        <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+          <div className="space-y-1">
+            <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Modelo de Juego</label>
+            <select 
+              className="flex h-9 w-full sm:w-48 items-center justify-between rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              value={selectedModelId || ''}
+              onChange={(e) => handleModelChange(e.target.value)}
+            >
+              {gameModels.map(gm => (
+                <option key={gm.id} value={gm.id}>{gm.name}</option>
+              ))}
+            </select>
           </div>
           
           <button 
-            onClick={handleSave}
-            className="w-full sm:w-auto inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
+            onClick={handleAutoBest11}
+            className="mt-5 inline-flex items-center justify-center gap-2 rounded-md text-sm font-bold transition-all bg-indigo-500/10 border border-indigo-500/50 text-indigo-400 shadow-sm hover:bg-indigo-500 hover:text-white h-9 px-4 py-2"
           >
-            Guardar Plantilla
+            <Wand2 className="w-4 h-4" /> Autocompletar 11
           </button>
         </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex overflow-hidden relative">
-          {/* Pitch */}
-          <div className="flex-1 p-2 sm:p-4 overflow-auto">
-            <PitchBoard 
-              slots={slots} 
-              players={players} 
-              onRemovePlayer={handleRemovePlayer} 
-            />
-          </div>
-
-          {/* Player Pool */}
-          <PlayerPool players={players} assignedPlayerIds={assignedPlayerIds} />
-        </div>
+        
+        <button 
+          onClick={handleSave}
+          className="w-full sm:w-auto mt-5 sm:mt-0 inline-flex items-center justify-center gap-2 rounded-md text-sm font-bold transition-all bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 hover:shadow-emerald-500/40 h-9 px-6 py-2"
+        >
+          <Save className="w-4 h-4" /> Guardar Plantilla
+        </button>
       </div>
 
-      {/* Drag Overlay */}
-      <DragOverlay dropAnimation={{
-        sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.4' } } })
-      }}>
-        {activePlayer ? <DraggablePlayer player={activePlayer} isOverlay /> : null}
-      </DragOverlay>
-    </DndContext>
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Pitch */}
+        <div className="flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+          <PitchBoard 
+            slots={slots} 
+            players={players} 
+            selectedSlotId={selectedSlotId}
+            onSlotClick={handleSlotClick}
+            onRemovePlayer={handleRemovePlayer} 
+          />
+        </div>
+
+        {/* Player Pool (Selección de jugadores por posición) */}
+        <PlayerPool 
+          players={players} 
+          assignedPlayerIds={assignedPlayerIds} 
+          onClear={handleClear}
+          formation={formation}
+          onFormationChange={handleFormationChange}
+          onPlayerSelect={handlePlayerSelect}
+          selectedSlotPosition={selectedSlot ? selectedSlot.position : null}
+        />
+      </div>
+    </div>
   )
 }

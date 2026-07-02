@@ -176,7 +176,7 @@ export function SoccerPitch({
 
       {/* Children overlays (positioned absolute inside the container) */}
       {children && (
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0">
           {children}
         </div>
       )}

@@ -7,17 +7,16 @@ import type { PlayerWithClub } from '@/types/players'
 interface PitchBoardProps {
   slots: TacticalSlot[]
   players: PlayerWithClub[]
+  selectedSlotId: string | null
+  onSlotClick: (slotId: string) => void
   onRemovePlayer: (slotId: string) => void
 }
 
-export function PitchBoard({ slots, players, onRemovePlayer }: PitchBoardProps) {
-  // We use orientation vertical for mobile and horizontal for desktop via CSS/Tailwind if possible, 
-  // but the SoccerPitch component accepts an orientation prop.
-  // Actually, standard tactic boards usually are vertical. Let's use vertical.
+export function PitchBoard({ slots, players, selectedSlotId, onSlotClick, onRemovePlayer }: PitchBoardProps) {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-muted/20 p-4 rounded-xl border border-border shadow-inner">
-      <div className="w-full max-w-2xl relative">
-        {/* We fix orientation to vertical as it looks better for formations */}
+    <div className="w-full h-full flex flex-col items-center justify-center">
+      {/* We constrain the height to 100% of the parent, and let aspect-ratio determine the width */}
+      <div className="relative h-full aspect-[68/105] bg-[#166534] rounded-lg border-2 border-slate-700 shadow-2xl overflow-hidden">
         <SoccerPitch orientation="vertical">
           {slots.map(slot => {
             const assignedPlayer = slot.playerId ? players.find(p => p.id === slot.playerId) : null
@@ -26,6 +25,8 @@ export function PitchBoard({ slots, players, onRemovePlayer }: PitchBoardProps) 
                 key={slot.id} 
                 slot={slot} 
                 player={assignedPlayer} 
+                isSelected={slot.id === selectedSlotId}
+                onClick={onSlotClick}
                 onRemovePlayer={onRemovePlayer} 
               />
             )

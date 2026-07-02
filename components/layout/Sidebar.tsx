@@ -36,7 +36,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     name: "Análisis de vídeo",
-    href: "/video",
+    href: "/analisis-video",
     icon: Video,
   },
   {
@@ -46,7 +46,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     name: "Modelo de juego",
-    href: "/game-model",
+    href: "/modelo-juego",
     icon: Layers,
   },
 ]
