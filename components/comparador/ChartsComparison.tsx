@@ -13,20 +13,55 @@ interface Props {
 export default function ChartsComparison({ players }: Props) {
   // 1. Prepare Radar Data
   const radarData = useMemo(() => {
-    return RADAR_METRIC_ORDER.map(metricCode => {
-      // Find label for this metric code from the first player's metrics (or any)
-      const anyPlayerMetric = players[0]?.metrics.find(m => m.code === metricCode)
-      const label = anyPlayerMetric?.label || metricCode
+    if (!players || players.length === 0) return []
 
-      const dataPoint: any = { metric: label, fullMark: 100 }
-      
-      players.forEach((p, idx) => {
-        const pm = p.metrics.find(m => m.code === metricCode)
-        dataPoint[`player_${idx}`] = pm ? pm.percentile : 0
+    const DIMENSIONS = [
+      { axis: 'Build Up', keys: ['pass_accuracy', 'passes_final_third', 'xgbuildup'] },
+      { axis: 'Progression', keys: ['prog_passes', 'prog_carries', 'through_balls'] },
+      { axis: 'Chance Creation', keys: ['key_passes', 'sca', 'xa', 'crosses'] },
+      { axis: 'Final Third', keys: ['touches_box', 'carries_final_third', 'carries_box'] },
+      { axis: 'Finishing', keys: ['goals', 'xg', 'shots_on_target', 'conversion_rate', 'big_chances'] },
+      { axis: 'Defensive Work', keys: ['tackles', 'interceptions', 'clearances', 'blocks'] },
+      { axis: 'Pressing', keys: ['recoveries', 'gca'] },
+      { axis: 'Physical Impact', keys: ['top_speed', 'sprint_dist', 'aerial_won'] }
+    ]
+
+    const isNewMetrics = players[0].metrics.some(m => m.code === 'goals' || m.code === 'xg')
+
+    if (isNewMetrics) {
+      return DIMENSIONS.map(dim => {
+        const dataPoint: any = { metric: dim.axis, fullMark: 100 }
+        
+        players.forEach((p, idx) => {
+          let sum = 0
+          let count = 0
+          dim.keys.forEach(k => {
+            const pm = p.metrics.find(m => m.code === k)
+            if (pm) {
+              sum += pm.percentile
+              count++
+            }
+          })
+          dataPoint[`player_${idx}`] = count > 0 ? Math.round(sum / count) : 0
+        })
+
+        return dataPoint
       })
-
-      return dataPoint
-    })
+    } else {
+      return RADAR_METRIC_ORDER.map(metricCode => {
+        const anyPlayerMetric = players[0]?.metrics.find(m => m.code === metricCode)
+        const label = anyPlayerMetric?.label || metricCode
+  
+        const dataPoint: any = { metric: label, fullMark: 100 }
+        
+        players.forEach((p, idx) => {
+          const pm = p.metrics.find(m => m.code === metricCode)
+          dataPoint[`player_${idx}`] = pm ? pm.percentile : 0
+        })
+  
+        return dataPoint
+      })
+    }
   }, [players])
 
   // 2. Prepare Group Bar Data (Offensive, Defensive, Possession)

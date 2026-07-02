@@ -10,39 +10,28 @@ import { jsPDF } from 'jspdf'
 export const MODEL_WEIGHTS: Record<string, Record<string, number>> = {
   // Juego de posición
   'Juego de posición': {
-    'build_play': 1.5,
-    'link_up_play': 1.5,
-    'open_play_creation': 1.2,
-    'threat': 0.8,
+    'build_play': 1.5, 'link_up_play': 1.5, 'open_play_creation': 1.2, 'threat': 0.8,
+    'pass_accuracy': 1.5, 'prog_passes': 1.3, 'xgbuildup': 1.4, 'key_passes': 1.2
   },
   // Presión alta / Gegenpressing
   'Presión alta / Gegenpressing': {
-    'defending_oppo_half': 1.5,
-    'open_play_defending': 1.3,
-    'threat': 1.2,
-    'progression_play': 1.2,
+    'defending_oppo_half': 1.5, 'open_play_defending': 1.3, 'threat': 1.2, 'progression_play': 1.2,
+    'recoveries': 1.5, 'gca': 1.3, 'tackles': 1.2, 'top_speed': 1.2, 'interceptions': 1.1
   },
   // Contraataque directo
   'Contraataque directo': {
-    'progression_play': 1.5,
-    'threat': 1.4,
-    'open_play_finishing': 1.3,
-    'defending_own_half': 1.2,
-    'build_play': 0.7, // menos pases cortos
+    'progression_play': 1.5, 'threat': 1.4, 'open_play_finishing': 1.3, 'defending_own_half': 1.2, 'build_play': 0.7,
+    'prog_carries': 1.5, 'top_speed': 1.4, 'through_balls': 1.3, 'goals': 1.3, 'pass_accuracy': 0.8
   },
   // Bloque bajo
   'Bloque bajo': {
-    'defending_own_half': 1.5,
-    'defending_box': 1.5,
-    'open_play_defending': 1.2,
-    'open_play_creation': 0.8,
+    'defending_own_half': 1.5, 'defending_box': 1.5, 'open_play_defending': 1.2, 'open_play_creation': 0.8,
+    'blocks': 1.5, 'clearances': 1.5, 'interceptions': 1.3, 'aerial_won': 1.2
   },
   // Fútbol total
   'Fútbol total': {
-    'open_play_creation': 1.3,
-    'threat': 1.3,
-    'open_play_defending': 1.3,
-    'link_up_play': 1.2,
+    'open_play_creation': 1.3, 'threat': 1.3, 'open_play_defending': 1.3, 'link_up_play': 1.2,
+    'sca': 1.3, 'key_passes': 1.3, 'tackles': 1.2, 'prog_passes': 1.2
   },
 }
 

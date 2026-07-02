@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { Plus, RefreshCw, Users, TrendingUp, Filter } from 'lucide-react'
+import { Plus, RefreshCw, Users, TrendingUp, Filter, FileUp } from 'lucide-react'
 import { PlayerCard } from '@/components/players/PlayerCard'
 import { PlayerFilters } from '@/components/players/PlayerFilters'
 import { AddPlayerModal } from '@/components/players/AddPlayerModal'
+import { ImportCsvModal } from '@/components/players/ImportCsvModal'
 import { getPlayers, getClubs } from '@/lib/playersApi'
 import type { PlayerWithClub, PlayerFilters as Filters, Club } from '@/types/players'
 
@@ -22,6 +23,7 @@ export default function PlayersPage() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchPlayers = useCallback(async () => {
@@ -79,14 +81,23 @@ export default function PlayersPage() {
                 Gestiona y analiza el rendimiento de tus jugadores scouting
               </p>
             </div>
-            <button
-              id="open-add-player-modal"
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-950/40 transition-all shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              Añadir jugador
-            </button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800 text-slate-200 font-bold text-sm hover:bg-slate-700 transition-all shadow-lg"
+              >
+                <FileUp className="w-4 h-4" />
+                Importar CSV
+              </button>
+              <button
+                id="open-add-player-modal"
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-950/40 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Añadir jugador
+              </button>
+            </div>
           </div>
 
           {/* Stats bar */}
@@ -170,13 +181,22 @@ export default function PlayersPage() {
             <p className="text-slate-500 text-sm max-w-xs">
               Ajusta los filtros o añade un nuevo jugador a la base de datos.
             </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="mt-5 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold text-sm hover:bg-emerald-500/20 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              Añadir primer jugador
-            </button>
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-sm hover:bg-slate-700 transition-all"
+              >
+                <FileUp className="w-4 h-4" />
+                Importar CSV
+              </button>
+              <button
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold text-sm hover:bg-emerald-500/20 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Añadir primer jugador
+              </button>
+            </div>
           </div>
         )}
 
@@ -204,7 +224,7 @@ export default function PlayersPage() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modals */}
       {showModal && (
         <AddPlayerModal
           clubs={clubs}
@@ -213,6 +233,17 @@ export default function PlayersPage() {
             fetchPlayers()
             getClubs().then(setClubs)
           }}
+        />
+      )}
+      
+      {showImportModal && (
+        <ImportCsvModal 
+          isOpen={showImportModal} 
+          onClose={() => setShowImportModal(false)} 
+          onSuccess={() => {
+            fetchPlayers()
+            getClubs().then(setClubs)
+          }} 
         />
       )}
     </div>

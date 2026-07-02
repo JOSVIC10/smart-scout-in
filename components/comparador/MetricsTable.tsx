@@ -8,11 +8,21 @@ interface Props {
 
 export default function MetricsTable({ players }: Props) {
   
+  // Determine if using new metrics
+  const isNewMetrics = players[0]?.metrics.some(m => m.code === 'goals' || m.code === 'xg')
+
+  const metricCodes = useMemo(() => {
+    if (!isNewMetrics) return RADAR_METRIC_ORDER
+    const codes = new Set<string>()
+    players.forEach(p => p.metrics.forEach(m => codes.add(m.code)))
+    return Array.from(codes)
+  }, [players, isNewMetrics])
+
   // Calculate which player has the best percentile for each metric
   const bestPerMetric = useMemo(() => {
     const bests: Record<string, number> = {}
     
-    RADAR_METRIC_ORDER.forEach(code => {
+    metricCodes.forEach(code => {
       let maxVal = -1
       
       players.forEach((p, idx) => {
@@ -27,14 +37,16 @@ export default function MetricsTable({ players }: Props) {
     })
     
     return bests
-  }, [players])
+  }, [players, metricCodes])
 
   if (players.length === 0) return null
 
-  // Get labels from first player
+  // Get labels
   const labelsMap: Record<string, string> = {}
-  players[0].metrics.forEach(m => {
-    labelsMap[m.code] = m.label
+  players.forEach(p => {
+    p.metrics.forEach(m => {
+      labelsMap[m.code] = m.label
+    })
   })
 
   return (
@@ -56,7 +68,7 @@ export default function MetricsTable({ players }: Props) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {RADAR_METRIC_ORDER.map(code => {
+            {metricCodes.map(code => {
               const label = labelsMap[code] || code
               const maxVal = bestPerMetric[code]
               
