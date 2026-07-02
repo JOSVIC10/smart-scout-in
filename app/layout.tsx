@@ -1,15 +1,18 @@
-import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: "#16a34a",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -20,8 +23,6 @@ export const metadata: Metadata = {
     "Plataforma avanzada de scouting de fútbol: análisis de jugadores, vídeo táctico, comparativas y modelos de juego.",
   keywords: ["scouting", "fútbol", "análisis", "táctica", "jugadores"],
   authors: [{ name: "Smart Scout In" }],
-  themeColor: "#16a34a",
-  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({
@@ -30,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={cn("dark", "font-sans", geist.variable)}>
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="es" className={`dark ${inter.variable}`}>
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>
