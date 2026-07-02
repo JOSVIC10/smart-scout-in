@@ -31,14 +31,10 @@ export function SoccerPitch({
 
   // For vertical orientation swap the axes so height > width
   const isVertical = orientation === 'vertical'
-  const vw = isVertical ? PITCH_H : PITCH_W
-  const vh = isVertical ? PITCH_W : PITCH_H
-
   // SVG viewBox matches the container aspect ratio
   const vbW = isVertical ? PITCH_H : PITCH_W
   const vbH = isVertical ? PITCH_W : PITCH_H
 
-  const pitchGreen = '#166534'
   const lineColor = 'rgba(255,255,255,0.85)'
   const lineWidth = 0.5
 

@@ -1,4 +1,5 @@
 import * as React from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -35,10 +36,11 @@ export function Avatar({
       {...props}
     >
       {src && !imageError ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={src}
           alt={alt}
+          fill
+          unoptimized
           onError={() => setImageError(true)}
           className="aspect-square h-full w-full object-cover"
         />

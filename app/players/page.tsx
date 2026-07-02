@@ -32,7 +32,7 @@ export default function PlayersPage() {
     try {
       const data = await getPlayers(filters)
       setPlayers(data)
-    } catch (err) {
+    } catch {
       setError('Error al cargar los jugadores. Verifica la conexión con Supabase.')
     } finally {
       setLoading(false)

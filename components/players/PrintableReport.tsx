@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react'
 import type { PlayerWithClub, EnrichedMetric, SimilarPlayer } from '@/types/players'
 import { SoccerPitch } from './SoccerPitch'
@@ -231,7 +232,7 @@ export function PrintableReport({ player, metrics, similarPlayers }: PrintableRe
                   <div key={sp.player.id || i} className="flex items-center justify-between text-lg">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0 text-xs flex items-center justify-center font-bold text-slate-400 overflow-hidden">
-                        {sp.player.photo_url ? <img src={sp.player.photo_url} className="w-full h-full object-cover" crossOrigin="anonymous"/> : sp.player.first_name[0]}
+                        {sp.player.photo_url ? <img src={sp.player.photo_url} alt={sp.player.last_name} className="w-full h-full object-cover" crossOrigin="anonymous"/> : sp.player.first_name[0]}
                       </div>
                       <span className="font-semibold text-slate-800 truncate max-w-[160px]">{sp.player.first_name} {sp.player.last_name}</span>
                     </div>

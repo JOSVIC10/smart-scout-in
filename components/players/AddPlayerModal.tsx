@@ -2,10 +2,10 @@
 
 import React, { useState, useRef } from 'react'
 import Image from 'next/image'
-import { X, Upload, User, Shield, Plus, Loader2 } from 'lucide-react'
+import { X, User, Shield, Plus, Loader2 } from 'lucide-react'
 import type { AddPlayerFormData, Position, PreferredFoot } from '@/types/players'
 import { POSITION_LABELS, FOOT_LABELS } from '@/types/players'
-import { createPlayer, createClub, getClubs } from '@/lib/playersApi'
+import { createPlayer, createClub } from '@/lib/playersApi'
 import type { Club } from '@/types/players'
 
 const POSITIONS = Object.keys(POSITION_LABELS) as Position[]

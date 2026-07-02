@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState } from "react"
-import { fabric } from "fabric"
-import { supabase } from "@/lib/supabase"
+import * as fabric from "fabric"
+import { supabase } from "@/lib/supabaseClient"
 import { Button } from "@/components/ui/button"
 import { 
   Pencil, 
@@ -30,6 +30,7 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
   const stopDrawingMode = () => {
     if (!canvas) return
     canvas.isDrawingMode = false
+    canvas.selection = true
     canvas.off("mouse:down")
     canvas.off("mouse:move")
     canvas.off("mouse:up")
@@ -41,8 +42,11 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
     if (!canvas) return
     stopDrawingMode()
     canvas.isDrawingMode = true
-    canvas.freeDrawingBrush.color = activeColor
-    canvas.freeDrawingBrush.width = 3
+    canvas.selection = false
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.color = activeColor
+      canvas.freeDrawingBrush.width = 3
+    }
     setActiveMode("freedraw")
   }
 
@@ -51,15 +55,16 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
     stopDrawingMode()
     setActiveMode(shapeType)
     canvas.defaultCursor = "crosshair"
+    canvas.selection = false
 
     let shape: fabric.Object | null = null
     let isDown = false
     let origX = 0
     let origY = 0
 
-    canvas.on("mouse:down", (o) => {
+    canvas.on("mouse:down", (o: { scenePoint?: { x: number; y: number }; pointer?: { x: number; y: number } }) => {
       isDown = true
-      const pointer = canvas.getPointer(o.e)
+      const pointer = o.scenePoint || o.pointer || { x: 0, y: 0 }
       origX = pointer.x
       origY = pointer.y
 
@@ -75,7 +80,7 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
           strokeWidth: 3,
         })
       } else if (shapeType === "line" || shapeType === "arrow") {
-        const points = [origX, origY, origX, origY]
+        const points: [number, number, number, number] = [origX, origY, origX, origY]
         shape = new fabric.Line(points, {
           strokeWidth: 3,
           fill: activeColor,
@@ -88,9 +93,9 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
       if (shape) canvas.add(shape)
     })
 
-    canvas.on("mouse:move", (o) => {
+    canvas.on("mouse:move", (o: { scenePoint?: { x: number; y: number }; pointer?: { x: number; y: number } }) => {
       if (!isDown || !shape) return
-      const pointer = canvas.getPointer(o.e)
+      const pointer = o.scenePoint || o.pointer || { x: 0, y: 0 }
 
       if (shapeType === "circle" && shape instanceof fabric.Circle) {
         const radius = Math.max(Math.abs(origY - pointer.y), Math.abs(origX - pointer.x)) / 2
@@ -202,7 +207,7 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
   const changeColor = (color: string) => {
     setActiveColor(color)
     if (canvas) {
-      if (canvas.isDrawingMode) {
+      if (canvas.isDrawingMode && canvas.freeDrawingBrush) {
         canvas.freeDrawingBrush.color = color
       }
       const activeObj = canvas.getActiveObject()

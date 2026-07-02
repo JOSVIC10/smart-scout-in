@@ -28,7 +28,7 @@ export function SimilarPlayers({ players }: SimilarPlayersProps) {
       </div>
 
       <div className="flex-1 flex flex-col justify-between gap-3">
-        {players.map(({ player, similarity }, idx) => {
+        {players.map(({ player, similarity }) => {
           const age = computeAge(player.birth_date)
           return (
             <Link

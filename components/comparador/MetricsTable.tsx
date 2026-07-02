@@ -25,7 +25,7 @@ export default function MetricsTable({ players }: Props) {
     metricCodes.forEach(code => {
       let maxVal = -1
       
-      players.forEach((p, idx) => {
+      players.forEach((p) => {
         const m = p.metrics.find(metric => metric.code === code)
         const val = m?.percentile || 0
         if (val > maxVal) {
@@ -76,7 +76,7 @@ export default function MetricsTable({ players }: Props) {
                 <tr key={code} className="hover:bg-muted/50 transition-colors">
                   <td className="px-6 py-3 font-medium text-foreground">{label}</td>
                   
-                  {players.map((p, idx) => {
+                  {players.map((p) => {
                     const m = p.metrics.find(metric => metric.code === code)
                     const val = m?.percentile || 0
                     

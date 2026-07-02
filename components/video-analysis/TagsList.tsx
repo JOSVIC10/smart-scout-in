@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabase"
+import React, { useEffect, useState, useCallback } from "react"
+import { supabase } from "@/lib/supabaseClient"
 import { PlayCircle, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -9,6 +9,7 @@ interface TagsListProps {
   videoId: string
   onSeek: (seconds: number) => void
   currentTime: number
+  refreshTrigger?: number
 }
 
 interface VideoTag {
@@ -18,11 +19,11 @@ interface VideoTag {
   created_at: string
 }
 
-export function TagsList({ videoId, onSeek, currentTime }: TagsListProps) {
+export function TagsList({ videoId, onSeek, currentTime, refreshTrigger }: TagsListProps) {
   const [tags, setTags] = useState<VideoTag[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     if (!videoId) return
     const { data } = await supabase
       .from('video_tags')
@@ -35,7 +36,7 @@ export function TagsList({ videoId, onSeek, currentTime }: TagsListProps) {
       setTags(data)
     }
     setLoading(false)
-  }
+  }, [videoId])
 
   useEffect(() => {
     fetchTags()
@@ -46,7 +47,7 @@ export function TagsList({ videoId, onSeek, currentTime }: TagsListProps) {
     }, 2000)
     
     return () => clearInterval(interval)
-  }, [videoId])
+  }, [fetchTags, refreshTrigger])
 
   const formatTime = (seconds: number) => {
     return new Date(seconds * 1000).toISOString().substring(14, 19)

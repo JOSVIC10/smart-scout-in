@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Download, Loader2, FileText } from 'lucide-react'
+import { Download, Loader2 } from 'lucide-react'
 
 interface ExportButtonProps {
   containerId?: string
@@ -23,7 +23,7 @@ export function ExportButton({
       const html2canvas = html2canvasModule.default || html2canvasModule
 
       const jsPDFModule = await import('jspdf')
-      const jsPDF = jsPDFModule.default || jsPDFModule.jsPDF || (jsPDFModule as any)
+      const jsPDF = jsPDFModule.default || jsPDFModule.jsPDF
 
       const element = document.getElementById(containerId)
       if (!element) {
@@ -91,9 +91,10 @@ export function ExportButton({
 
       const safeName = (playerName ?? filename).replace(/\s+/g, '_').toLowerCase()
       pdf.save(`${safeName}_informe.pdf`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Export error:', err)
-      alert('Error al exportar: ' + (err?.message || err))
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      alert('Error al exportar: ' + errorMsg)
     } finally {
       setLoading(false)
     }

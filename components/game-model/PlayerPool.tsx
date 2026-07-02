@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react'
 import type { PlayerWithClub } from '@/types/players'
-import { DraggablePlayer } from './DraggablePlayer'
 import { SelectablePlayer } from './DraggablePlayer'
-import { ChevronUp, ChevronDown, Search, RefreshCw } from 'lucide-react'
+import { ChevronUp, ChevronDown, Search, RefreshCw, Filter } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { FORMATIONS } from '@/lib/formations'
 
@@ -16,11 +15,24 @@ interface PlayerPoolProps {
   onFormationChange: (fmt: string) => void
   onPlayerSelect: (player: PlayerWithClub) => void
   selectedSlotPosition: string | null
+  
+  // Filter Props
+  minAge: number | ''
+  setMinAge: (val: number | '') => void
+  maxAge: number | ''
+  setMaxAge: (val: number | '') => void
+  selectedLeague: string
+  setSelectedLeague: (val: string) => void
+  leagues: string[]
 }
 
-export function PlayerPool({ players, assignedPlayerIds, onClear, formation, onFormationChange, onPlayerSelect, selectedSlotPosition }: PlayerPoolProps) {
+export function PlayerPool({ 
+  players, assignedPlayerIds, onClear, formation, onFormationChange, onPlayerSelect, selectedSlotPosition,
+  minAge, setMinAge, maxAge, setMaxAge, selectedLeague, setSelectedLeague, leagues
+}: PlayerPoolProps) {
   const [isOpenMobile, setIsOpenMobile] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
 
   const filteredPlayers = players.filter(p => 
     p.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -54,16 +66,62 @@ export function PlayerPool({ players, assignedPlayerIds, onClear, formation, onF
               <RefreshCw className="w-3 h-3" /> Limpiar
             </button>
           </div>
-          <select 
-            className="h-7 w-24 rounded border border-slate-700 bg-slate-800 px-2 text-xs text-slate-200 shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
-            value={formation}
-            onChange={(e) => onFormationChange(e.target.value)}
-          >
-            {Object.keys(FORMATIONS).map(fmt => (
-              <option key={fmt} value={fmt}>{fmt}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowFilters(!showFilters)} className={`p-1.5 rounded transition-colors ${showFilters || minAge || maxAge || selectedLeague ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+              <Filter className="w-4 h-4" />
+            </button>
+            <select 
+              className="h-7 w-20 rounded border border-slate-700 bg-slate-800 px-1 text-xs text-slate-200 shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+              value={formation}
+              onChange={(e) => onFormationChange(e.target.value)}
+            >
+              {Object.keys(FORMATIONS).map(fmt => (
+                <option key={fmt} value={fmt}>{fmt}</option>
+              ))}
+            </select>
+          </div>
         </div>
+        
+        {showFilters && (
+          <div className="bg-slate-900 border border-slate-700 rounded-md p-3 space-y-3 text-xs shadow-inner">
+            <div>
+              <label className="text-slate-400 mb-1 block">Liga</label>
+              <select 
+                className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-slate-200"
+                value={selectedLeague}
+                onChange={e => setSelectedLeague(e.target.value)}
+              >
+                <option value="">Todas</option>
+                {leagues.map(l => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-slate-400 mb-1 block">Edad Min.</label>
+                <Input 
+                  type="number" 
+                  className="h-7 text-xs bg-slate-950 border-slate-800" 
+                  value={minAge} 
+                  onChange={e => setMinAge(e.target.value ? parseInt(e.target.value) : '')} 
+                  placeholder="Ej: 18"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-slate-400 mb-1 block">Edad Max.</label>
+                <Input 
+                  type="number" 
+                  className="h-7 text-xs bg-slate-950 border-slate-800" 
+                  value={maxAge} 
+                  onChange={e => setMaxAge(e.target.value ? parseInt(e.target.value) : '')} 
+                  placeholder="Ej: 25"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 

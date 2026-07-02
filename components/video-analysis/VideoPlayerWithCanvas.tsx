@@ -2,8 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import ReactPlayer from "react-player"
-import { fabric } from "fabric"
-import { supabase } from "@/lib/supabase"
+import * as fabric from "fabric"
+import { supabase } from "@/lib/supabaseClient"
 
 interface VideoPlayerWithCanvasProps {
   url: string
@@ -32,6 +32,12 @@ export function VideoPlayerWithCanvas({
   
   const [lastLoadedTime, setLastLoadedTime] = useState<number | null>(null)
 
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Initialize Fabric Canvas
   useEffect(() => {
     if (!canvasRef.current || !containerRef.current) return
@@ -48,8 +54,10 @@ export function VideoPlayerWithCanvas({
 
     const handleResize = () => {
       if (containerRef.current) {
-        canvas.setWidth(containerRef.current.clientWidth)
-        canvas.setHeight(containerRef.current.clientHeight)
+        canvas.setDimensions({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight
+        })
         canvas.renderAll()
       }
     }
@@ -118,24 +126,29 @@ export function VideoPlayerWithCanvas({
 
   return (
     <div ref={containerRef} className="w-full h-full relative group">
-      <ReactPlayer
-        ref={playerRef}
-        url={url}
-        width="100%"
-        height="100%"
-        playing={isPlaying}
-        controls={true}
-        onPlay={onPlay}
-        onPause={handlePause}
-        onProgress={handleProgress}
-        progressInterval={500}
-        style={{ position: 'absolute', top: 0, left: 0 }}
-      />
+      {mounted && (
+        <ReactPlayer
+          ref={playerRef}
+          url={url}
+          width="100%"
+          height="100%"
+          playing={isPlaying}
+          controls={true}
+          onPlay={onPlay}
+          onPause={handlePause}
+          onProgress={handleProgress}
+          progressInterval={500}
+          style={{ position: 'absolute', top: 0, left: 0 }}
+        />
+      )}
       
       {/* Canvas Overlay */}
       <div 
-        className="absolute inset-0 z-10" 
-        style={{ pointerEvents: isPlaying ? 'none' : 'auto' }}
+        className="absolute top-0 left-0 right-0 z-10" 
+        style={{ 
+          bottom: '50px', // Leave 50px for the video controls
+          pointerEvents: isPlaying ? 'none' : 'auto' 
+        }}
       >
         <canvas ref={canvasRef} />
       </div>

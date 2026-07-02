@@ -52,7 +52,7 @@ export function PlayerProfileClient({ id }: PlayerProfileClientProps) {
         getSimilarPlayers(id, m, 5)
           .then(setSimilar)
           .catch(console.error)
-      } catch (err) {
+      } catch {
         setError('Error al cargar los datos del jugador.')
       } finally {
         setLoading(false)

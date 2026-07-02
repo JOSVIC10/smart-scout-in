@@ -1,6 +1,6 @@
 import React from 'react'
 import { getPlayers } from '@/lib/playersApi'
-import { getGameModels, getTemplates } from '@/lib/gameModelApi'
+import { getGameModels } from '@/lib/gameModelApi'
 import { TacticalEditor } from '@/components/game-model/TacticalEditor'
 
 // Import Next.js metadata correctly
@@ -10,10 +10,9 @@ export const metadata = {
 }
 
 export default async function ModeloJuegoPage() {
-  const [players, gameModels, templates] = await Promise.all([
+  const [players, gameModels] = await Promise.all([
     getPlayers(),
-    getGameModels(),
-    getTemplates()
+    getGameModels()
   ])
 
   // Optionally, we could pass the first template as the initial slots

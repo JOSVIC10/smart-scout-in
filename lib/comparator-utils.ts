@@ -1,4 +1,4 @@
-import { EnrichedMetric, MetricGroup, PlayerWithClub } from '../types/players'
+import { EnrichedMetric, PlayerWithClub } from '../types/players'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 

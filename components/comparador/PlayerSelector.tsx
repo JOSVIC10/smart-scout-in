@@ -1,16 +1,17 @@
 import React, { useState } from 'react'
+import Image from 'next/image'
 import { PlayerWithClub } from '@/types/players'
 import { CHART_COLORS } from '@/lib/comparator-utils'
 import { Plus, X } from 'lucide-react'
 
-interface Props {
-  selectedPlayers: PlayerWithClub[]
-  availablePlayers: PlayerWithClub[]
-  onAdd: (player: any) => void
+interface Props<T extends PlayerWithClub = PlayerWithClub> {
+  selectedPlayers: T[]
+  availablePlayers: T[]
+  onAdd: (player: T) => void
   onRemove: (playerId: string) => void
 }
 
-export default function PlayerSelector({ selectedPlayers, availablePlayers, onAdd, onRemove }: Props) {
+export default function PlayerSelector<T extends PlayerWithClub>({ selectedPlayers, availablePlayers, onAdd, onRemove }: Props<T>) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -45,9 +46,9 @@ export default function PlayerSelector({ selectedPlayers, availablePlayers, onAd
               </button>
 
               {/* Player Photo */}
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0 border-2" style={{ borderColor: color }}>
+              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0 border-2" style={{ borderColor: color }}>
                 {player.photo_url ? (
-                  <img src={player.photo_url} alt={player.last_name} className="w-full h-full object-cover" />
+                  <Image src={player.photo_url} alt={player.last_name} fill className="object-cover" unoptimized />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs font-bold text-muted-foreground">
                     {player.first_name[0]}{player.last_name[0]}
@@ -62,7 +63,7 @@ export default function PlayerSelector({ selectedPlayers, availablePlayers, onAd
                 </p>
                 <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
                   {player.club?.badge_url && (
-                    <img src={player.club.badge_url} alt={player.club.name} className="w-3 h-3" />
+                    <Image src={player.club.badge_url} alt={player.club.name} width={12} height={12} className="w-3 h-3 object-contain" unoptimized />
                   )}
                   {player.club?.name || 'Agente Libre'}
                 </p>
@@ -105,9 +106,9 @@ export default function PlayerSelector({ selectedPlayers, availablePlayers, onAd
                         }}
                         className="flex items-center gap-2 w-full text-left px-2 py-2 rounded hover:bg-muted transition-colors"
                       >
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-secondary flex-shrink-0">
+                        <div className="relative w-8 h-8 rounded-full overflow-hidden bg-secondary flex-shrink-0">
                           {p.photo_url ? (
-                            <img src={p.photo_url} alt={p.last_name} className="w-full h-full object-cover" />
+                            <Image src={p.photo_url} alt={p.last_name} fill className="object-cover" unoptimized />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                               {p.first_name[0]}{p.last_name[0]}

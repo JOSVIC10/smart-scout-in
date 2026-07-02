@@ -65,8 +65,9 @@ export function ImportCsvModal({ isOpen, onClose, onSuccess }: ImportCsvModalPro
             setSuccess(null)
           }, 2000)
 
-        } catch (err: any) {
-          setError(err.message)
+        } catch (err: unknown) {
+          const errorMsg = err instanceof Error ? err.message : String(err)
+          setError(errorMsg)
         } finally {
           setLoading(false)
         }

@@ -9,10 +9,10 @@ import { ScoutingReportTab } from "@/components/video-analysis/ScoutingReportTab
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Play, Pause, Youtube } from "lucide-react"
-import { supabase } from "@/lib/supabase"
+import { Play, Pause, MonitorPlay } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
 import ReactPlayer from "react-player"
-import { fabric } from "fabric"
+import type * as fabric from "fabric"
 
 export default function VideoAnalysisPage() {
   const [videoUrlInput, setVideoUrlInput] = useState("")
@@ -24,32 +24,59 @@ export default function VideoAnalysisPage() {
   
   const playerRef = useRef<ReactPlayer>(null)
   const [fabricCanvas, setFabricCanvas] = useState<fabric.Canvas | null>(null)
+  const [refreshTags, setRefreshTags] = useState(0)
 
   // Load video
   const handleLoadVideo = async () => {
     if (!videoUrlInput) return
     
-    // Check if video exists in DB or create
-    let { data: existing } = await supabase
-      .from('videos')
-      .select('*')
-      .eq('youtube_url', videoUrlInput)
-      .single()
-      
-    if (!existing) {
-      const { data: newVideo } = await supabase
-        .from('videos')
-        .insert({ title: 'Análisis Táctico', youtube_url: videoUrlInput })
-        .select()
-        .single()
-      existing = newVideo
+    // Basic YouTube URL validation (must contain youtube.com/watch?v= or youtu.be/ or /live/ or /shorts/ and have an 11 char ID)
+    const ytRegex = /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|v\/|e\/|watch\?vi=|v=|shorts\/|live\/))([\w-]{11})/
+    const match = videoUrlInput.match(ytRegex)
+    if (!match) {
+      alert("Por favor, introduce una URL válida de YouTube.\nAsegúrate de haber copiado el enlace completo (no uno que termine en '...')")
+      return
     }
     
-    if (existing) {
-      setVideoId(existing.id)
-      setActiveVideoUrl(existing.youtube_url)
-      setCurrentTime(0)
-      setIsPlaying(false)
+    // Normalize to standard watch?v= format so ReactPlayer doesn't fail
+    const normalizedUrl = `https://www.youtube.com/watch?v=${match[1]}`
+
+    try {
+      // Check if video exists in DB or create
+      const { data: existingFetch, error: fetchError } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('youtube_url', normalizedUrl)
+        .single()
+        
+      if (!existingFetch && fetchError && fetchError.code !== 'PGRST116') {
+        throw new Error(fetchError.message)
+      }
+        
+      let existing = existingFetch
+      if (!existing) {
+        const { data: newVideo, error: insertError } = await supabase
+          .from('videos')
+          .insert({ title: 'Análisis Táctico', youtube_url: normalizedUrl })
+          .select()
+          .single()
+          
+        if (insertError) {
+          console.error("Error inserting video:", insertError)
+          throw new Error("No se pudo guardar el vídeo en la base de datos. Verifica las políticas RLS. Detalles: " + insertError.message)
+        }
+        existing = newVideo
+      }
+      
+      if (existing) {
+        setVideoId(existing.id)
+        setActiveVideoUrl(existing.youtube_url)
+        setCurrentTime(0)
+        setIsPlaying(false)
+      }
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      alert("Error al cargar el vídeo:\n" + errorMsg)
     }
   }
 
@@ -78,7 +105,7 @@ export default function VideoAnalysisPage() {
             className="w-full md:w-[300px] bg-slate-900 border-slate-700 focus-visible:ring-emerald-500"
           />
           <Button onClick={handleLoadVideo} className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
-            <Youtube className="w-4 h-4 mr-2" />
+            <MonitorPlay className="w-4 h-4 mr-2" />
             Cargar
           </Button>
         </div>
@@ -86,7 +113,7 @@ export default function VideoAnalysisPage() {
 
       {!activeVideoUrl ? (
         <div className="h-[60vh] flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-900/50 text-slate-500">
-          <Youtube className="w-16 h-16 mb-4 opacity-50" />
+          <MonitorPlay className="w-16 h-16 mb-4 opacity-50" />
           <h3 className="text-xl font-medium text-slate-400">No hay vídeo cargado</h3>
           <p className="mt-2 text-sm">Pega una URL de YouTube en la parte superior para comenzar el análisis.</p>
         </div>
@@ -139,11 +166,11 @@ export default function VideoAnalysisPage() {
               
               <div className="flex-1 overflow-y-auto p-4">
                 <TabsContent value="tagging" className="m-0 h-full flex flex-col gap-6">
-                  <LiveTaggingPanel videoId={videoId!} currentTime={currentTime} isPlaying={isPlaying} />
+                  <LiveTaggingPanel videoId={videoId!} currentTime={currentTime} isPlaying={isPlaying} onTagAdded={() => setRefreshTags(prev => prev + 1)} />
                   <div className="flex-1 overflow-hidden flex flex-col">
                     <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Tags de este vídeo</h3>
                     <div className="flex-1 overflow-y-auto pr-2">
-                      <TagsList videoId={videoId!} onSeek={handleSeek} currentTime={currentTime} />
+                      <TagsList videoId={videoId!} onSeek={handleSeek} currentTime={currentTime} refreshTrigger={refreshTags} />
                     </div>
                   </div>
                 </TabsContent>

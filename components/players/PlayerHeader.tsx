@@ -2,9 +2,9 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { computeAge, POSITION_LABELS, FOOT_LABELS } from '@/types/players'
+import { computeAge, FOOT_LABELS } from '@/types/players'
 import type { PlayerWithClub } from '@/types/players'
-import { MapPin, Clock, Hash, Trophy, Star, Ruler, Weight, Calendar, Euro } from 'lucide-react'
+import { MapPin, Trophy, Star, Ruler, Weight, Calendar } from 'lucide-react'
 import { generatePlayerMetadata } from '@/lib/tacticalLogic'
 
 const COUNTRY_FLAGS: Record<string, string> = {

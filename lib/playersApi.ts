@@ -6,13 +6,10 @@ import type {
   Player,
   PlayerWithClub,
   Club,
-  Metric,
   EnrichedMetric,
-  PlayerMetric,
   Rating,
   SimilarPlayer,
   PlayerFilters,
-  RADAR_METRIC_ORDER,
 } from '@/types/players'
 import { RADAR_METRIC_ORDER as ORDER } from '@/types/players'
 
@@ -121,21 +118,24 @@ export async function getPlayerMetrics(playerId: string): Promise<EnrichedMetric
 
   if (error) throw error
 
-  const raw = data as Array<{
+  const raw = data as unknown as Array<{
     value: number
     percentile: number | null
-    metric: { code: string; label: string; group: string } | null
+    metric: { code: string; label: string; group: string } | { code: string; label: string; group: string }[] | null
   }>
 
   const enriched: EnrichedMetric[] = raw
-    .filter((r) => r.metric !== null)
-    .map((r) => ({
-      code: r.metric!.code,
-      label: r.metric!.label,
-      group: r.metric!.group as EnrichedMetric['group'],
-      value: r.value,
-      percentile: r.percentile ?? 0,
-    }))
+    .filter((r) => r.metric !== null && r.metric !== undefined)
+    .map((r) => {
+      const m = Array.isArray(r.metric) ? r.metric[0] : r.metric!
+      return {
+        code: m.code,
+        label: m.label,
+        group: m.group as EnrichedMetric['group'],
+        value: r.value,
+        percentile: r.percentile ?? 0,
+      }
+    })
 
   // Sort by RADAR_METRIC_ORDER
   return enriched.sort((a, b) => {
@@ -168,14 +168,16 @@ export async function getSimilarPlayers(
 
   // Build map: playerId → { code → percentile }
   const playerMap = new Map<string, Map<string, number>>()
-  for (const m of allMetrics as Array<{
+  for (const m of allMetrics as unknown as Array<{
     player_id: string
     percentile: number | null
-    metric: { code: string } | null
+    metric: { code: string } | { code: string }[] | null
   }>) {
     if (!m.metric) continue
+    const metricObj = Array.isArray(m.metric) ? m.metric[0] : m.metric
+    if (!metricObj?.code) continue
     if (!playerMap.has(m.player_id)) playerMap.set(m.player_id, new Map())
-    playerMap.get(m.player_id)!.set(m.metric.code, m.percentile ?? 0)
+    playerMap.get(m.player_id)!.set(metricObj.code, m.percentile ?? 0)
   }
 
   // Base vector
@@ -183,10 +185,10 @@ export async function getSimilarPlayers(
 
   // Compute Euclidean distance
   const scores: Array<{ playerId: string; similarity: number }> = []
-  for (const [pid, vec] of playerMap.entries()) {
+  for (const [pid, vec] of Array.from(playerMap.entries())) {
     let sumSq = 0
     let count = 0
-    for (const [code, p] of baseVector.entries()) {
+    for (const [code, p] of Array.from(baseVector.entries())) {
       const q = vec.get(code) ?? 0
       sumSq += (p - q) ** 2
       count++

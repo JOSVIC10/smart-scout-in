@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { Save, Star, Loader2, CheckCircle } from 'lucide-react'
 import { getPlayerRating, upsertRating } from '@/lib/playersApi'
-import type { Rating } from '@/types/players'
 
 interface ScoutRatingProps {
   playerId: string
@@ -40,15 +39,6 @@ export function ScoutRating({ playerId }: ScoutRatingProps) {
       setLoading(false)
     }
   }
-
-  const scoreColor =
-    score >= 80
-      ? 'text-green-400'
-      : score >= 60
-      ? 'text-yellow-400'
-      : score >= 40
-      ? 'text-orange-400'
-      : 'text-red-400'
 
   const scoreBg =
     score >= 80

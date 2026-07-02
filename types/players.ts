@@ -194,10 +194,17 @@ export const POSITION_LABELS: Record<Position, string> = {
   GK: 'Portero',
   CB: 'Central',
   FB: 'Lateral',
+  RB: 'Lateral Derecho',
+  LB: 'Lateral Izquierdo',
   DM: 'M. Defensivo',
   CM: 'M. Central',
+  BBM: 'Todocampista',
   AM: 'M. Ofensivo',
   W: 'Extremo',
+  RW: 'Extremo Derecho',
+  LW: 'Extremo Izquierdo',
+  SS: 'Segundo Delantero',
+  CF: 'Falso 9',
   ST: 'Delantero',
 }
 

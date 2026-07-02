@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { supabase } from "@/lib/supabase"
+import { supabase } from "@/lib/supabaseClient"
 import { Button } from "@/components/ui/button"
 import { 
   Crosshair, 
@@ -19,6 +19,7 @@ interface LiveTaggingPanelProps {
   videoId: string
   currentTime: number
   isPlaying: boolean
+  onTagAdded?: () => void
 }
 
 const TAG_TYPES = [
@@ -32,7 +33,7 @@ const TAG_TYPES = [
   { id: "falta", label: "Falta", icon: AlertTriangle, color: "text-orange-400 bg-orange-400/10 border-orange-400/20" },
 ]
 
-export function LiveTaggingPanel({ videoId, currentTime, isPlaying }: LiveTaggingPanelProps) {
+export function LiveTaggingPanel({ videoId, currentTime, isPlaying, onTagAdded }: LiveTaggingPanelProps) {
   const [savingTag, setSavingTag] = useState<string | null>(null)
 
   const handleTag = async (tagId: string, label: string) => {
@@ -51,6 +52,7 @@ export function LiveTaggingPanel({ videoId, currentTime, isPlaying }: LiveTaggin
     
     // In a real app, we might want to use a global state/context to notify `TagsList` to refresh,
     // or trigger an event. We will handle refreshing via subscription or interval in TagsList.
+    if (onTagAdded) onTagAdded()
     
     setSavingTag(null)
   }

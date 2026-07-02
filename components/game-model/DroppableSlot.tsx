@@ -57,10 +57,13 @@ export function PitchPlayer({ player, slotId, onRemovePlayer }: { player: Player
 }
 
 // We kept the name "DroppableSlot" so imports don't break, but it's now just a selectable slot
-export function DroppableSlot({ slot, player, isSelected, onClick, onRemovePlayer }: DroppableSlotProps) {
+export function DroppableSlot({ slot, player, isSelected, onClick, onRemovePlayer, onPlayerClick }: DroppableSlotProps & { onPlayerClick?: (p: PlayerWithClub, s: string) => void }) {
   return (
     <button
-      onClick={() => onClick && onClick(slot.id)}
+      onClick={() => {
+        if (onClick) onClick(slot.id);
+        if (player && onPlayerClick) onPlayerClick(player, slot.id);
+      }}
       className={`absolute flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2 transition-all duration-200 z-10 hover:scale-110 cursor-pointer outline-none`}
       style={{ left: `${slot.x}%`, top: `${slot.y}%`, width: '5rem', height: '6rem' }}
     >

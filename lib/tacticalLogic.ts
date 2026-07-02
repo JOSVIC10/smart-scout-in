@@ -173,3 +173,20 @@ export function generateScoutHistory(id: string) {
   // sort by date string (dummy sort)
   return history.reverse()
 }
+
+// ---------------------------------------------------------------------------
+// Simulates a player's affinity for a specific Game Model
+// ---------------------------------------------------------------------------
+export function getTacticalAffinity(playerId: string, modelName: string): number {
+  if (!modelName) return 50
+  
+  const hash1 = hashString(playerId)
+  const hash2 = hashString(modelName)
+  
+  // Create a pseudo-random relationship between player ID and the model name
+  // This ensures that the affinity is always the same for the same player-model combination,
+  // but varies wildly between different models for the same player.
+  const affinityMod = ((hash1 + hash2) % 41) - 20 // Range -20 to +20
+  
+  return 70 + affinityMod // Base affinity 70, so range is 50 to 90
+}

@@ -30,7 +30,7 @@ export default function ChartsComparison({ players }: Props) {
 
     if (isNewMetrics) {
       return DIMENSIONS.map(dim => {
-        const dataPoint: any = { metric: dim.axis, fullMark: 100 }
+        const dataPoint: Record<string, string | number> = { metric: dim.axis, fullMark: 100 }
         
         players.forEach((p, idx) => {
           let sum = 0
@@ -52,7 +52,7 @@ export default function ChartsComparison({ players }: Props) {
         const anyPlayerMetric = players[0]?.metrics.find(m => m.code === metricCode)
         const label = anyPlayerMetric?.label || metricCode
   
-        const dataPoint: any = { metric: label, fullMark: 100 }
+        const dataPoint: Record<string, string | number> = { metric: label, fullMark: 100 }
         
         players.forEach((p, idx) => {
           const pm = p.metrics.find(m => m.code === metricCode)
@@ -69,7 +69,7 @@ export default function ChartsComparison({ players }: Props) {
     const groups = ['offensive', 'defensive', 'possession']
     
     return groups.map(group => {
-      const dataPoint: any = { group: group.toUpperCase() }
+      const dataPoint: Record<string, string | number> = { group: group.toUpperCase() }
       
       players.forEach((p, idx) => {
         const groupMetrics = p.metrics.filter(m => m.group === group)

@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useEffect, useState, useRef } from "react"
-import { supabase } from "@/lib/supabase"
+import React, { useEffect, useState, useRef, useCallback } from "react"
+import { supabase } from "@/lib/supabaseClient"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Download, Shield, Loader2, FileText } from "lucide-react"
@@ -30,7 +30,7 @@ export function ScoutingReportTab({ videoId }: ScoutingReportTabProps) {
   const [exporting, setExporting] = useState(false)
   const reportRef = useRef<HTMLDivElement>(null)
 
-  const fetchReportData = async () => {
+  const fetchReportData = useCallback(async () => {
     if (!videoId) return
     setLoading(true)
     const { data } = await supabase
@@ -48,11 +48,11 @@ export function ScoutingReportTab({ videoId }: ScoutingReportTabProps) {
       setCounts(newCounts)
     }
     setLoading(false)
-  }
+  }, [videoId])
 
   useEffect(() => {
     fetchReportData()
-  }, [videoId])
+  }, [fetchReportData])
 
   const handleExportPDF = async () => {
     if (!reportRef.current) return

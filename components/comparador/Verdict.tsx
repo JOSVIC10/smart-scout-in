@@ -36,7 +36,7 @@ export default function Verdict({ players, modelName }: Props) {
             Veredicto Automático: <span style={{ color }}>{winnerPlayer.first_name} {winnerPlayer.last_name}</span>
           </h3>
           <p className="text-muted-foreground mb-4">
-            Mejor encaje táctico para el modelo <strong>"{modelName}"</strong>.
+            Mejor encaje táctico para el modelo <strong>&quot;{modelName}&quot;</strong>.
           </p>
 
           <div className="bg-card border border-border rounded-lg p-4 mb-4">
