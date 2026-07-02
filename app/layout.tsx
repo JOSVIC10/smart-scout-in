@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { MainLayout } from "@/components/layout/MainLayout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,8 +33,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`dark ${inter.variable}`}>
-      <body className="font-sans antialiased">
-        {children}
+      <body className="font-sans antialiased bg-[#0a0f1e] text-slate-100">
+        <MainLayout>{children}</MainLayout>
       </body>
     </html>
   );
