@@ -72,8 +72,8 @@ export function ScoutRating({ playerId }: ScoutRatingProps) {
         </div>
       ) : (
         <div className="p-5 space-y-5">
-          {/* Score slider */}
-          <div>
+          {/* Score slider (Interactive only) */}
+          <div className="html2canvas-hide">
             <div className="flex items-center justify-between mb-2">
               <label htmlFor="scout-score-slider" className="text-slate-400 text-sm font-medium">
                 Puntuación
@@ -115,6 +115,21 @@ export function ScoutRating({ playerId }: ScoutRatingProps) {
             </div>
           </div>
 
+          {/* Export-only Score Display */}
+          <div className="hidden html2canvas-show flex items-center gap-4">
+            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${scoreBg} flex items-center justify-center shadow-lg`}>
+              <span className="text-white font-black text-2xl">{score}</span>
+            </div>
+            <div className="flex gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-6 h-6 ${score >= (i + 1) * 20 ? 'text-amber-400 fill-amber-400' : 'text-slate-700'}`}
+                />
+              ))}
+            </div>
+          </div>
+
           {/* Notes */}
           <div>
             <label htmlFor="scout-notes" className="block text-slate-400 text-sm font-medium mb-2">
@@ -126,16 +141,20 @@ export function ScoutRating({ playerId }: ScoutRatingProps) {
               onChange={(e) => setNotes(e.target.value)}
               rows={5}
               placeholder="Observaciones, puntos fuertes, áreas de mejora..."
-              className="w-full bg-slate-900/60 border border-slate-700/60 text-slate-200 placeholder-slate-600 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500/60 transition-all resize-none"
+              className="html2canvas-hide w-full bg-slate-900/60 border border-slate-700/60 text-slate-200 placeholder-slate-600 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500/60 transition-all resize-none"
             />
+            {/* Export-only Notes Display */}
+            <div className="hidden html2canvas-show text-slate-300 text-sm whitespace-pre-wrap leading-relaxed bg-slate-900/40 p-4 rounded-xl border border-slate-800/40">
+              {notes || 'Sin observaciones registradas.'}
+            </div>
           </div>
 
-          {/* Save */}
+          {/* Save (Interactive only) */}
           <button
             id="save-scout-rating"
             onClick={handleSave}
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm hover:from-emerald-400 hover:to-emerald-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            className="html2canvas-hide w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm hover:from-emerald-400 hover:to-emerald-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

@@ -4,93 +4,73 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { SimilarPlayer } from '@/types/players'
-import { computeAge, POSITION_LABELS } from '@/types/players'
-import { Users, TrendingUp } from 'lucide-react'
+import { computeAge } from '@/types/players'
+import { Users } from 'lucide-react'
 
 interface SimilarPlayersProps {
   players: SimilarPlayer[]
 }
 
-function SimilarityBar({ value }: { value: number }) {
-  const color =
-    value >= 80 ? '#22c55e' : value >= 60 ? '#84cc16' : value >= 40 ? '#eab308' : '#f97316'
-  return (
-    <div className="flex items-center gap-2 flex-1">
-      <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-700"
-          style={{ width: `${value}%`, backgroundColor: color }}
-        />
-      </div>
-      <span className="text-xs font-black" style={{ color }}>
-        {value}%
-      </span>
-    </div>
-  )
-}
-
 export function SimilarPlayers({ players }: SimilarPlayersProps) {
-  if (!players.length) {
+  if (!players || players.length === 0) {
     return (
-      <div className="glass-card rounded-2xl border border-slate-800/60 p-5">
-        <h2 className="text-slate-100 font-bold text-base mb-4">Más similares a</h2>
+      <div className="bg-slate-900 border border-slate-800/60 rounded-3xl p-6 shadow-xl h-full flex items-center justify-center">
         <p className="text-slate-500 text-sm">No se encontraron jugadores similares.</p>
       </div>
     )
   }
 
   return (
-    <div className="glass-card rounded-2xl border border-slate-800/60 overflow-hidden">
-      <div className="p-5 border-b border-slate-800/60 flex items-center gap-2">
-        <TrendingUp className="w-4 h-4 text-emerald-400" />
-        <h2 className="text-slate-100 font-bold text-base">Más similares a</h2>
+    <div className="bg-slate-900 border border-slate-800/60 rounded-3xl p-6 shadow-xl h-full flex flex-col">
+      <div className="flex items-center gap-2 text-emerald-400 mb-6">
+        <Users className="w-5 h-5" />
+        <h2 className="text-xs font-black uppercase tracking-widest">Perfiles Similares</h2>
       </div>
 
-      <div className="divide-y divide-slate-800/40">
+      <div className="flex-1 flex flex-col justify-between gap-3">
         {players.map(({ player, similarity }, idx) => {
           const age = computeAge(player.birth_date)
           return (
             <Link
               key={player.id}
               href={`/players/${player.id}`}
-              className="flex items-center gap-4 p-4 hover:bg-slate-800/30 transition-colors group"
+              className="group flex items-center gap-4 p-3 bg-slate-800/30 hover:bg-slate-800/80 border border-slate-700/30 hover:border-emerald-500/30 rounded-2xl transition-all"
             >
-              {/* Rank */}
-              <span className="text-slate-600 font-black text-lg w-5 text-center">{idx + 1}</span>
-
               {/* Photo */}
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-800 border border-slate-700/50 shrink-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-slate-700">
                 {player.photo_url ? (
                   <Image
                     src={player.photo_url}
                     alt={`${player.first_name} ${player.last_name}`}
-                    width={48}
-                    height={48}
-                    className="object-cover object-top w-full h-full"
+                    width={56}
+                    height={56}
+                    className="object-cover object-top w-full h-full group-hover:scale-110 transition-transform duration-500"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Users className="w-6 h-6 text-slate-600" />
+                    <span className="text-xl">👤</span>
                   </div>
                 )}
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-slate-200 font-bold text-sm group-hover:text-emerald-400 transition-colors truncate">
+                <p className="text-slate-200 font-bold text-sm truncate group-hover:text-emerald-400 transition-colors">
                   {player.first_name} {player.last_name}
                 </p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[11px] text-slate-500 bg-slate-800/60 px-1.5 py-0.5 rounded font-medium">
-                    {player.position}
-                  </span>
-                  {age !== null && (
-                    <span className="text-[11px] text-slate-500">{age} años</span>
-                  )}
+                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
+                  <span className="truncate">{player.club?.name ?? 'Sin club'}</span>
+                  <span>•</span>
+                  <span>{age} años</span>
                 </div>
-                <div className="mt-1.5">
-                  <SimilarityBar value={similarity} />
-                </div>
+              </div>
+
+              {/* Similarity Score */}
+              <div className="shrink-0 flex flex-col items-end">
+                <span className={`text-lg font-black ${similarity > 85 ? 'text-emerald-400' : similarity > 70 ? 'text-sky-400' : 'text-slate-400'}`}>
+                  {similarity}%
+                </span>
+                <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Similitud</span>
               </div>
             </Link>
           )

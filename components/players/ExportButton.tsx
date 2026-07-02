@@ -19,10 +19,11 @@ export function ExportButton({
   const handleExport = async () => {
     setLoading(true)
     try {
-      const [html2canvas, { jsPDF }] = await Promise.all([
-        import('html2canvas').then((m) => m.default),
-        import('jspdf'),
-      ])
+      const html2canvasModule = await import('html2canvas')
+      const html2canvas = html2canvasModule.default || html2canvasModule
+
+      const jsPDFModule = await import('jspdf')
+      const jsPDF = jsPDFModule.default || jsPDFModule.jsPDF || (jsPDFModule as any)
 
       const element = document.getElementById(containerId)
       if (!element) {
@@ -35,52 +36,64 @@ export function ExportButton({
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#0a0f1e',
+        backgroundColor: '#ffffff', // White background for the new report
         logging: false,
         imageTimeout: 5000,
+        onclone: (clonedDoc) => {
+          // We can keep the old toggle logic in case we reuse this button somewhere else
+          const hideElements = clonedDoc.querySelectorAll('.html2canvas-hide')
+          hideElements.forEach((el) => {
+            ;(el as HTMLElement).style.display = 'none'
+          })
+          const showElements = clonedDoc.querySelectorAll('.html2canvas-show')
+          showElements.forEach((el) => {
+            ;(el as HTMLElement).style.setProperty('display', 'flex', 'important')
+            if (el.classList.contains('whitespace-pre-wrap')) {
+              ;(el as HTMLElement).style.setProperty('display', 'block', 'important')
+            }
+          })
+        },
       })
 
       const imgData = canvas.toDataURL('image/png', 0.95)
       const imgWidth = canvas.width
       const imgHeight = canvas.height
-      const ratio = imgWidth / imgHeight
 
-      // Create PDF
+      // Create PDF in A4 portrait
       const pdf = new jsPDF({
-        orientation: ratio > 1 ? 'landscape' : 'portrait',
+        orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       })
 
-      const pdfW = pdf.internal.pageSize.getWidth()
-      const pdfH = pdf.internal.pageSize.getHeight()
-      const pdfRatio = pdfW / pdfH
+      const pdfW = pdf.internal.pageSize.getWidth() // 210mm
+      const pdfH = pdf.internal.pageSize.getHeight() // 297mm
+      
+      // Calculate how high the total image is in mm
+      const totalPdfHeight = (imgHeight * pdfW) / imgWidth
+      const totalPages = Math.ceil(totalPdfHeight / pdfH)
 
-      let finalW = pdfW
-      let finalH = pdfW / ratio
-      if (finalH > pdfH) {
-        finalH = pdfH
-        finalW = pdfH * ratio
+      // Add pages and shift image up
+      for (let i = 0; i < totalPages; i++) {
+        if (i > 0) {
+          pdf.addPage()
+        }
+        
+        const yOffset = -(pdfH * i)
+        
+        pdf.addImage(imgData, 'PNG', 0, yOffset, pdfW, totalPdfHeight)
+        
+        // Watermark on each page
+        pdf.setFontSize(8)
+        pdf.setTextColor(150, 150, 150)
+        pdf.text(`Smart Scout In — Informe generado automáticamente — Página ${i + 1}/${totalPages}`, pdfW / 2, pdfH - 5, { align: 'center' })
       }
-
-      const offsetX = (pdfW - finalW) / 2
-      const offsetY = (pdfH - finalH) / 2
-
-      // Dark background
-      pdf.setFillColor(10, 15, 30)
-      pdf.rect(0, 0, pdfW, pdfH, 'F')
-
-      pdf.addImage(imgData, 'PNG', offsetX, offsetY, finalW, finalH)
-
-      // Watermark
-      pdf.setFontSize(8)
-      pdf.setTextColor(100, 116, 139)
-      pdf.text('Smart Scout In — Informe generado automáticamente', pdfW / 2, pdfH - 5, { align: 'center' })
 
       const safeName = (playerName ?? filename).replace(/\s+/g, '_').toLowerCase()
       pdf.save(`${safeName}_informe.pdf`)
-    } catch (err) {
+    } catch (err: any) {
       console.error('Export error:', err)
+      alert('Error al exportar: ' + (err?.message || err))
     } finally {
       setLoading(false)
     }

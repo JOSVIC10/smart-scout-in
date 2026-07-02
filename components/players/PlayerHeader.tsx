@@ -4,23 +4,19 @@ import React from 'react'
 import Image from 'next/image'
 import { computeAge, POSITION_LABELS, FOOT_LABELS } from '@/types/players'
 import type { PlayerWithClub } from '@/types/players'
-import { MapPin, Clock, Hash, Trophy, Star } from 'lucide-react'
+import { MapPin, Clock, Hash, Trophy, Star, Ruler, Weight, Calendar, Euro } from 'lucide-react'
+import { generatePlayerMetadata } from '@/lib/tacticalLogic'
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  Spain: '🇪🇸', England: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', Germany: '🇩🇪', France: '🇫🇷',
-  Italy: '🇮🇹', Turkey: '🇹🇷', Portugal: '🇵🇹', Brazil: '🇧🇷',
-  Argentina: '🇦🇷', Netherlands: '🇳🇱', Belgium: '🇧🇪', Default: '🌍',
-}
-
-const POSITION_COLORS: Record<string, string> = {
-  GK: 'from-yellow-500 to-amber-600',
-  CB: 'from-blue-500 to-blue-700',
-  FB: 'from-cyan-500 to-cyan-700',
-  DM: 'from-purple-500 to-purple-700',
-  CM: 'from-indigo-500 to-indigo-700',
-  AM: 'from-orange-500 to-orange-700',
-  W: 'from-pink-500 to-pink-700',
-  ST: 'from-red-500 to-red-700',
+  España: '🇪🇸', Inglaterra: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', Alemania: '🇩🇪', Francia: '🇫🇷',
+  Italia: '🇮🇹', Turquía: '🇹🇷', Portugal: '🇵🇹', Brasil: '🇧🇷',
+  Argentina: '🇦🇷', Holanda: '🇳🇱', Bélgica: '🇧🇪', Default: '🌍',
+  Escocia: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', Canadá: '🇨🇦', Marruecos: '🇲🇦', Uruguay: '🇺🇾',
+  Ecuador: '🇪🇨', Ucrania: '🇺🇦', 'Corea del Sur': '🇰🇷', Croacia: '🇭🇷',
+  México: '🇲🇽', Japón: '🇯🇵', Ghana: '🇬🇭', Mali: '🇲🇱',
+  USA: '🇺🇸', Hungría: '🇭🇺', Austria: '🇦🇹', Egipto: '🇪🇬', Suecia: '🇸🇪',
+  Georgia: '🇬🇪', Colombia: '🇨🇴', Dinamarca: '🇩🇰', Senegal: '🇸🇳',
+  Nigeria: '🇳🇬', Serbia: '🇷🇸', Polonia: '🇵🇱', Suiza: '🇨🇭', Noruega: '🇳🇴'
 }
 
 interface PlayerHeaderProps {
@@ -30,20 +26,23 @@ interface PlayerHeaderProps {
 export function PlayerHeader({ player }: PlayerHeaderProps) {
   const age = computeAge(player.birth_date)
   const flag = COUNTRY_FLAGS[player.nationality] ?? COUNTRY_FLAGS.Default
-  const posGradient = POSITION_COLORS[player.position] ?? 'from-slate-500 to-slate-700'
+  
+  // Use tactical logic to generate missing deterministic metadata
+  const meta = generatePlayerMetadata(player.id, age, player.position)
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-800/60 bg-gradient-to-br from-slate-900 to-slate-950">
+    <div className="relative overflow-hidden rounded-3xl border border-slate-800/60 bg-slate-900 shadow-2xl">
       {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-emerald-500/5 blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-blue-500/5 blur-3xl" />
+      <div className="absolute inset-0 overflow-hidden opacity-50">
+        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-emerald-500/10 to-transparent" />
+        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-emerald-500/20 blur-[100px]" />
       </div>
 
-      <div className="relative flex flex-col md:flex-row gap-6 p-6">
-        {/* Photo */}
+      <div className="relative flex flex-col lg:flex-row gap-8 p-8 items-center lg:items-stretch">
+        
+        {/* Foto de jugador */}
         <div className="relative shrink-0">
-          <div className="w-36 h-36 md:w-44 md:h-44 rounded-2xl overflow-hidden border-2 border-emerald-500/30 shadow-lg shadow-emerald-950/50 bg-slate-800">
+          <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl overflow-hidden border border-slate-700 bg-slate-800 relative z-10 shadow-xl">
             {player.photo_url ? (
               <Image
                 src={player.photo_url}
@@ -52,90 +51,97 @@ export function PlayerHeader({ player }: PlayerHeaderProps) {
                 className="object-cover object-top"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900">
-                <span className="text-6xl">👤</span>
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-slate-700 to-slate-800">
+                <span className="text-6xl mb-2">👤</span>
               </div>
             )}
-          </div>
-
-          {/* Position badge */}
-          <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r ${posGradient} text-white text-xs font-black shadow-lg whitespace-nowrap`}>
-            {player.position} · {POSITION_LABELS[player.position as keyof typeof POSITION_LABELS]}
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0 pt-2">
-          {/* Name */}
-          <div className="mb-1">
-            <span className="text-slate-400 text-sm font-medium">{player.first_name}</span>
-            <h1 className="text-3xl md:text-4xl font-black text-white leading-tight mt-0.5">
-              {player.last_name}
-            </h1>
-          </div>
-
-          {/* Stats chips */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            <Chip icon={<span className="text-base">{flag}</span>} label={player.nationality} />
-            {age !== null && <Chip icon={<span className="text-xs font-bold text-emerald-400">{age}</span>} label="años" />}
-            {player.shirt_number && (
-              <Chip icon={<Hash className="w-3.5 h-3.5 text-emerald-400" />} label={`${player.shirt_number}`} />
-            )}
-            <Chip icon={<Clock className="w-3.5 h-3.5 text-blue-400" />} label={`${player.minutes_played.toLocaleString()} min`} />
-            {player.league && (
-              <Chip icon={<Trophy className="w-3.5 h-3.5 text-amber-400" />} label={player.league} />
-            )}
-            <Chip
-              icon={<Star className="w-3.5 h-3.5 text-slate-400" />}
-              label={FOOT_LABELS[player.preferred_foot]}
-            />
-          </div>
-
-          {/* Club */}
-          <div className="mt-5 flex items-center gap-3">
-            {player.club?.badge_url && (
-              <div className="w-10 h-10 rounded-xl bg-white/5 border border-slate-700/60 flex items-center justify-center overflow-hidden">
-                <Image
-                  src={player.club.badge_url}
-                  alt={player.club.name}
-                  width={36}
-                  height={36}
-                  className="object-contain"
-                />
-              </div>
-            )}
-            <div>
-              <p className="text-slate-200 font-bold text-sm">
-                {player.club?.name ?? 'Agente libre'}
-              </p>
-              {player.club?.country && (
-                <p className="text-slate-500 text-xs">{player.club.country}</p>
-              )}
+            
+            {/* Etiqueta de posición flotante */}
+            <div className="absolute bottom-0 left-0 right-0 bg-emerald-600/90 backdrop-blur-md text-white text-center py-1.5 text-xs font-black uppercase tracking-widest">
+              {player.position}
             </div>
-
-            {/* Overall rating */}
-            {player.overall_rating && (
-              <div className="ml-auto flex flex-col items-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-950/40">
-                  <span className="text-slate-900 font-black text-xl">
-                    {Math.round(player.overall_rating)}
-                  </span>
-                </div>
-                <span className="text-xs text-slate-500 mt-1">Overall</span>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Info principal */}
+        <div className="flex-1 flex flex-col w-full min-w-0 text-center lg:text-left justify-center">
+          
+          {/* Nombre y liga */}
+          <div className="mb-4">
+            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
+              {player.first_name} <span className="text-emerald-400">{player.last_name}</span>
+            </h1>
+            <div className="flex items-center justify-center lg:justify-start gap-3 mt-2 text-slate-400 text-sm font-medium">
+              <span className="flex items-center gap-1.5"><Trophy className="w-4 h-4 text-amber-400"/> {player.league ?? 'Competición desconocida'}</span>
+              <span>•</span>
+              <span className="flex items-center gap-1.5">{flag} {player.nationality}</span>
+            </div>
+          </div>
+
+          {/* Tarjetas biográficas densas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <BioCard icon={<Calendar className="w-4 h-4 text-sky-400"/>} label="Edad" value={`${age ?? '--'} años`} />
+            <BioCard icon={<Ruler className="w-4 h-4 text-emerald-400"/>} label="Altura" value={`${meta.height} cm`} />
+            <BioCard icon={<Weight className="w-4 h-4 text-purple-400"/>} label="Peso" value={`${meta.weight} kg`} />
+            <BioCard icon={<Star className="w-4 h-4 text-amber-400"/>} label="Pie dominante" value={FOOT_LABELS[player.preferred_foot]} />
+          </div>
+
+        </div>
+
+        {/* Derecha: Club, Valor de mercado, Pitch */}
+        <div className="w-full lg:w-72 shrink-0 flex flex-col justify-between gap-4 border-t lg:border-t-0 lg:border-l border-slate-700/50 pt-6 lg:pt-0 lg:pl-8">
+          
+          {/* Club Info */}
+          <div className="flex items-center gap-4 bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
+            {player.club?.badge_url ? (
+              <div className="w-12 h-12 bg-white/10 rounded-lg p-1.5 shrink-0">
+                <Image src={player.club.badge_url} alt={player.club.name} width={40} height={40} className="object-contain" />
+              </div>
+            ) : (
+              <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center shrink-0">
+                <MapPin className="w-6 h-6 text-slate-400" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-white font-bold truncate">{player.club?.name ?? 'Sin club'}</p>
+              <p className="text-slate-400 text-xs truncate">{player.club?.country ?? 'País desconocido'}</p>
+            </div>
+          </div>
+
+          {/* Valor de Mercado & Contrato */}
+          <div className="grid grid-cols-2 gap-3">
+             <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50 text-center">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Valor Estimado</p>
+                <p className="text-lg font-black text-emerald-400">€{meta.marketValue}M</p>
+             </div>
+             <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50 text-center">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Fin Contrato</p>
+                <p className="text-lg font-bold text-slate-200">{meta.contractEnd}</p>
+             </div>
+          </div>
+
+          {/* Partidos */}
+          <div className="text-center bg-slate-800/40 p-2 rounded-xl border border-slate-700/50 text-xs text-slate-300">
+             Disputados <strong>{meta.matches} partidos</strong> ({player.minutes_played.toLocaleString()} min)
+          </div>
+
+        </div>
+
       </div>
     </div>
   )
 }
 
-function Chip({ icon, label }: { icon: React.ReactNode; label: string }) {
+function BioCard({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
   return (
-    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs font-medium">
-      {icon}
-      <span>{label}</span>
+    <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 flex items-center gap-3">
+      <div className="bg-slate-700/50 p-2 rounded-lg shrink-0">
+        {icon}
+      </div>
+      <div>
+        <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{label}</p>
+        <p className="text-sm font-bold text-slate-200">{value}</p>
+      </div>
     </div>
   )
 }

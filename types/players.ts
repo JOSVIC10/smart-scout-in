@@ -4,7 +4,22 @@
 
 export type PreferredFoot = 'left' | 'right' | 'both'
 
-export type Position = 'GK' | 'CB' | 'FB' | 'DM' | 'CM' | 'AM' | 'W' | 'ST'
+export type Position = 
+  | 'GK' 
+  | 'CB' 
+  | 'FB' 
+  | 'RB' 
+  | 'LB'
+  | 'DM' 
+  | 'CM' 
+  | 'BBM'
+  | 'AM' 
+  | 'W' 
+  | 'RW'
+  | 'LW'
+  | 'SS'
+  | 'CF'
+  | 'ST'
 
 export type MetricGroup = 'offensive' | 'defensive' | 'possession'
 

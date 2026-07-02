@@ -350,6 +350,13 @@ CREATE POLICY "anon_read_video_tags"     ON video_tags     FOR SELECT TO anon US
 CREATE POLICY "anon_read_video_drawings" ON video_drawings FOR SELECT TO anon USING (true);
 CREATE POLICY "anon_read_ratings"        ON ratings        FOR SELECT TO anon USING (true);
 
+-- INSERT / UPDATE para ANON (Prototipo sin autenticación)
+CREATE POLICY "anon_insert_players"      ON players        FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon_update_players"      ON players        FOR UPDATE TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_insert_clubs"        ON clubs          FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon_insert_ratings"      ON ratings        FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon_update_ratings"      ON ratings        FOR UPDATE TO anon USING (true) WITH CHECK (true);
+
 -- --------------------------------------------------------------------------
 -- 5.2  Políticas para rol AUTHENTICATED — Lectura + Escritura completa
 -- --------------------------------------------------------------------------

@@ -41,7 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     name: "Comparador",
-    href: "/comparator",
+    href: "/comparador",
     icon: GitCompare,
   },
   {
