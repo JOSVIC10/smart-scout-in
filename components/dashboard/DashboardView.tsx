@@ -118,6 +118,18 @@ const POSITION_MAP: { [key: string]: { label: string; color: string } } = {
   ST: { label: "Delanteros", color: "#ef4444" },     // Red
 }
 
+interface SupabasePlayerRow {
+  id: string
+  first_name: string
+  last_name: string
+  position: string
+  preferred_foot?: string
+  overall_rating?: number | string
+  photo_url?: string | null
+  league?: string | null
+  clubs?: { name: string; country?: string } | null
+}
+
 export function DashboardView() {
   const [loading, setLoading] = React.useState(true)
   const [stats, setStats] = React.useState<DashboardStats>({
@@ -162,7 +174,7 @@ export function DashboardView() {
           .limit(6)
 
         if (latestData && latestData.length > 0) {
-          const mappedLatest: PlayerItem[] = latestData.map((p: any) => ({
+          const mappedLatest: PlayerItem[] = (latestData as unknown as SupabasePlayerRow[]).map((p) => ({
             id: p.id,
             first_name: p.first_name,
             last_name: p.last_name,
@@ -184,7 +196,7 @@ export function DashboardView() {
           .limit(5)
 
         if (topData && topData.length > 0) {
-          const mappedTop: PlayerItem[] = topData.map((p: any) => ({
+          const mappedTop: PlayerItem[] = (topData as unknown as SupabasePlayerRow[]).map((p) => ({
             id: p.id,
             first_name: p.first_name,
             last_name: p.last_name,
@@ -203,14 +215,16 @@ export function DashboardView() {
           .from("players")
           .select("position")
 
-        const playersForChart = allPlayers && allPlayers.length > 0 ? allPlayers : FALLBACK_PLAYERS
+        const chartList: Array<{ position?: string }> = (allPlayers && allPlayers.length > 0
+          ? allPlayers
+          : FALLBACK_PLAYERS) as Array<{ position?: string }>
 
         // Count distribution
         const counts: { [pos: string]: number } = {
           GK: 0, CB: 0, FB: 0, DM: 0, CM: 0, AM: 0, W: 0, ST: 0,
         }
 
-        playersForChart.forEach((p: any) => {
+        chartList.forEach((p) => {
           if (p.position && counts[p.position] !== undefined) {
             counts[p.position] += 1
           }

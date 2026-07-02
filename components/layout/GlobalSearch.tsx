@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, X, User as UserIcon, Shield, Sparkles, ArrowRight } from "lucide-react"
+import { Search, X, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 import { Badge } from "@/components/ui/badge"
@@ -71,7 +71,7 @@ export function GlobalSearch() {
           setResults(filtered)
         } else {
           // Cast typed output
-          const mapped: PlayerSearchResult[] = data.map((item: any) => ({
+          const mapped: PlayerSearchResult[] = (data as unknown as Array<{ id: string; first_name: string; last_name: string; position: string; overall_rating: number; photo_url?: string | null; clubs?: { name: string } | null }>).map((item) => ({
             id: item.id,
             first_name: item.first_name,
             last_name: item.last_name,

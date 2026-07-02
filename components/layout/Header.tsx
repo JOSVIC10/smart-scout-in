@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Shield, Bell, Menu, X, Sparkles, SlidersHorizontal } from "lucide-react"
+import { Shield, Bell, Menu, X } from "lucide-react"
 import { GlobalSearch } from "./GlobalSearch"
 import { cn } from "@/lib/utils"
 

@@ -19,11 +19,16 @@ export interface PositionCount {
   color: string
 }
 
-interface PositionChartProps {
-  data: PositionCount[]
+interface TooltipPayloadItem {
+  payload: PositionCount
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: TooltipPayloadItem[]
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const item: PositionCount = payload[0].payload
     return (
@@ -88,4 +93,8 @@ export function PositionChart({ data }: PositionChartProps) {
       </ResponsiveContainer>
     </div>
   )
+}
+
+interface PositionChartProps {
+  data: PositionCount[]
 }
