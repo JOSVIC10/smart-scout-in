@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import * as fabric from "fabric"
 import { supabase } from "@/lib/supabaseClient"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,11 @@ const COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#eab308", "#ffffff", "#000000"
 export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarProps) {
   const [activeColor, setActiveColor] = useState(COLORS[0])
   const [activeMode, setActiveMode] = useState<string | null>(null)
+
+  const activeColorRef = useRef(activeColor)
+  useEffect(() => {
+    activeColorRef.current = activeColor
+  }, [activeColor])
 
   const stopDrawingMode = () => {
     if (!canvas) return
@@ -75,16 +80,16 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
           originX: "center",
           originY: "center",
           radius: 1,
-          fill: "transparent",
-          stroke: activeColor,
+          fill: "rgba(0,0,0,0)",
+          stroke: activeColorRef.current,
           strokeWidth: 3,
         })
       } else if (shapeType === "line" || shapeType === "arrow") {
         const points: [number, number, number, number] = [origX, origY, origX, origY]
         shape = new fabric.Line(points, {
           strokeWidth: 3,
-          fill: activeColor,
-          stroke: activeColor,
+          fill: activeColorRef.current,
+          stroke: activeColorRef.current,
           originX: "center",
           originY: "center",
         })
@@ -127,7 +132,7 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
           angle: angle + 90,
           width: 15,
           height: 15,
-          fill: activeColor,
+          fill: activeColorRef.current,
         })
         canvas.add(triangle)
         
