@@ -19,8 +19,6 @@ export default function PintadoAccionesPage() {
   <div className="app-shell">
     <header className="topbar">
       <div className="brand">
-        <p className="eyebrow">Analisis Visual</p>
-        <img className="brand-logo" src="LOGO.png" alt="Logo Athletic Club Football Center" />
         <h1>PINTADO DE ACCIONES</h1>
       </div>
 
