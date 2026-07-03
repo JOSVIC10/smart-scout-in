@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Shield,
   Activity,
+  PenTool,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -38,6 +39,11 @@ export const NAV_ITEMS: NavItem[] = [
     name: "Análisis de vídeo",
     href: "/analisis-video",
     icon: Video,
+  },
+  {
+    name: "Pintado de acciones",
+    href: "/pintado-acciones",
+    icon: PenTool,
   },
   {
     name: "Comparador",

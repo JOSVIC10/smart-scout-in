@@ -80,7 +80,7 @@ export function PrintableReport({ player, metrics, similarPlayers }: PrintableRe
           <div className="flex gap-6 items-center">
             <div className="w-32 h-32 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
               {player.photo_url ? (
-                <img src={player.photo_url} alt={player.last_name} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                <img src={`/_next/image?url=${encodeURIComponent(player.photo_url)}&w=256&q=75`} alt={player.last_name} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-4xl text-slate-400 font-bold">{player.first_name[0]}{player.last_name[0]}</span>
               )}
@@ -92,7 +92,7 @@ export function PrintableReport({ player, metrics, similarPlayers }: PrintableRe
               <div className="flex gap-4 mt-2 text-xl text-slate-600 font-medium items-center">
                 <span className="flex items-center gap-2">
                   {player.club?.badge_url && (
-                    <img src={player.club.badge_url} alt={player.club?.name} className="w-6 h-6 object-contain" crossOrigin="anonymous" />
+                    <img src={`/_next/image?url=${encodeURIComponent(player.club.badge_url)}&w=64&q=75`} alt={player.club?.name} className="w-6 h-6 object-contain" />
                   )}
                   {player.club?.name || 'Agente Libre'}
                 </span>
@@ -232,7 +232,7 @@ export function PrintableReport({ player, metrics, similarPlayers }: PrintableRe
                   <div key={sp.player.id || i} className="flex items-center justify-between text-lg">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0 text-xs flex items-center justify-center font-bold text-slate-400 overflow-hidden">
-                        {sp.player.photo_url ? <img src={sp.player.photo_url} alt={sp.player.last_name} className="w-full h-full object-cover" crossOrigin="anonymous"/> : sp.player.first_name[0]}
+                        {sp.player.photo_url ? <img src={`/_next/image?url=${encodeURIComponent(sp.player.photo_url)}&w=64&q=75`} alt={sp.player.last_name} className="w-full h-full object-cover" /> : sp.player.first_name[0]}
                       </div>
                       <span className="font-semibold text-slate-800 truncate max-w-[160px]">{sp.player.first_name} {sp.player.last_name}</span>
                     </div>
