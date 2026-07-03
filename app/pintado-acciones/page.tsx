@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Script from 'next/script';
 import './pintado.css';
 
