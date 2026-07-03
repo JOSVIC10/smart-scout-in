@@ -12,7 +12,8 @@ import {
   Type, 
   Eraser, 
   Save, 
-  Trash2
+  Trash2,
+  MousePointer2
 } from "lucide-react"
 
 interface DrawingToolbarProps {
@@ -32,15 +33,29 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
     activeColorRef.current = activeColor
   }, [activeColor])
 
+  const handlersRef = useRef<{
+    down?: (o: any) => void,
+    move?: (o: any) => void,
+    up?: (o: any) => void
+  }>({})
+
   const stopDrawingMode = () => {
     if (!canvas) return
     canvas.isDrawingMode = false
     canvas.selection = true
-    canvas.off("mouse:down")
-    canvas.off("mouse:move")
-    canvas.off("mouse:up")
+    
+    if (handlersRef.current.down) canvas.off("mouse:down", handlersRef.current.down)
+    if (handlersRef.current.move) canvas.off("mouse:move", handlersRef.current.move)
+    if (handlersRef.current.up) canvas.off("mouse:up", handlersRef.current.up)
+    
+    handlersRef.current = {}
+    
     canvas.defaultCursor = "default"
     setActiveMode(null)
+  }
+
+  const handleSelectMode = () => {
+    stopDrawingMode()
   }
 
   const handleFreeDraw = () => {
@@ -48,8 +63,13 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
     stopDrawingMode()
     canvas.isDrawingMode = true
     canvas.selection = false
+    
+    if (!canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas)
+    }
+    
     if (canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush.color = activeColor
+      canvas.freeDrawingBrush.color = activeColorRef.current
       canvas.freeDrawingBrush.width = 3
     }
     setActiveMode("freedraw")
@@ -67,7 +87,7 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
     let origX = 0
     let origY = 0
 
-    canvas.on("mouse:down", (o: { scenePoint?: { x: number; y: number }; pointer?: { x: number; y: number } }) => {
+    const onMouseDown = (o: any) => {
       isDown = true
       const pointer = o.scenePoint || o.pointer || { x: 0, y: 0 }
       origX = pointer.x
@@ -96,9 +116,9 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
       }
 
       if (shape) canvas.add(shape)
-    })
+    }
 
-    canvas.on("mouse:move", (o: { scenePoint?: { x: number; y: number }; pointer?: { x: number; y: number } }) => {
+    const onMouseMove = (o: any) => {
       if (!isDown || !shape) return
       const pointer = o.scenePoint || o.pointer || { x: 0, y: 0 }
 
@@ -109,9 +129,9 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
         shape.set({ x2: pointer.x, y2: pointer.y })
       }
       canvas.renderAll()
-    })
+    }
 
-    canvas.on("mouse:up", () => {
+    const onMouseUp = () => {
       isDown = false
       if (shapeType === "arrow" && shape instanceof fabric.Line) {
         // Add triangle at the end of the line
@@ -145,7 +165,12 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
       }
       
       stopDrawingMode()
-    })
+    }
+
+    handlersRef.current = { down: onMouseDown, move: onMouseMove, up: onMouseUp }
+    canvas.on("mouse:down", onMouseDown)
+    canvas.on("mouse:move", onMouseMove)
+    canvas.on("mouse:up", onMouseUp)
   }
 
   const handleAddText = () => {
@@ -234,6 +259,16 @@ export function DrawingToolbar({ canvas, videoId, currentTime }: DrawingToolbarP
     <div className="flex items-center gap-3">
       {/* Herramientas */}
       <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleSelectMode}
+          className={`h-8 w-8 ${activeMode === null ? 'bg-slate-800 text-emerald-400' : 'text-slate-400 hover:text-slate-200'}`}
+          title="Seleccionar / Mover"
+        >
+          <MousePointer2 className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-5 bg-slate-700 mx-1" />
         <Button 
           variant="ghost" 
           size="icon" 
