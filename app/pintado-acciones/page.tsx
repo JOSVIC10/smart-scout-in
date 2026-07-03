@@ -7,14 +7,10 @@ import './pintado.css';
 
 export default function PintadoAccionesPage() {
   
-  // We need to disable the React Layout sidebar for this specific page, or at least force full height
-  useEffect(() => {
-    document.body.classList.add('overflow-hidden');
-    return () => document.body.classList.remove('overflow-hidden');
-  }, []);
+  // Removed overflow-hidden effect to allow scrolling
 
   return (
-    <div className="pintado-wrapper w-full h-[calc(100vh-theme(spacing.16))] relative overflow-hidden bg-[#0b1320]">
+    <div className="pintado-wrapper w-full relative bg-[#0b1320] min-h-[calc(100vh-80px)]">
       
   <div className="app-shell">
     <header className="topbar">
