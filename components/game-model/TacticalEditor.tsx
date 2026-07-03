@@ -265,7 +265,7 @@ export function TacticalEditor({
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
         {/* Pitch */}
         <div className="flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
           <PitchBoard 

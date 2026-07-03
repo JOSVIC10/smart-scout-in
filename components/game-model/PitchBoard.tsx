@@ -16,8 +16,8 @@ interface PitchBoardProps {
 export function PitchBoard({ slots, players, selectedSlotId, onSlotClick, onRemovePlayer, onPlayerClick }: PitchBoardProps) {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center relative">
-      {/* We constrain the height to 100% of the parent, and let aspect-ratio determine the width */}
-      <div className="relative h-full aspect-[68/105] bg-[#166534] rounded-lg border-2 border-slate-700 shadow-2xl overflow-hidden">
+      {/* We constrain width/height based on device to keep the pitch fully visible */}
+      <div className="relative w-full max-w-[450px] aspect-[68/105] md:w-auto md:max-w-none md:h-full bg-[#166534] rounded-lg border-2 border-slate-700 shadow-2xl overflow-hidden">
         <SoccerPitch orientation="vertical">
           {slots.map(slot => {
             const assignedPlayer = slot.playerId ? players.find(p => p.id === slot.playerId) : null
